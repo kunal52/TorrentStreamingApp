@@ -1,56 +1,31 @@
 package com.techweblearn.mediastreaming.UI;
 
 import android.Manifest;
-import android.content.BroadcastReceiver;
-import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
-import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 
-import com.frostwire.jlibtorrent.LibTorrent;
-import com.frostwire.jlibtorrent.TorrentBuilder;
-import com.frostwire.jlibtorrent.TorrentInfo;
-import com.github.se_bastiaan.torrentstream.StreamStatus;
-import com.github.se_bastiaan.torrentstream.Torrent;
-import com.github.se_bastiaan.torrentstream.TorrentOptions;
-import com.github.se_bastiaan.torrentstream.TorrentStream;
-import com.github.se_bastiaan.torrentstream.listeners.TorrentListener;
-import com.google.android.exoplayer2.DefaultRenderersFactory;
-import com.google.android.exoplayer2.ExoPlayerFactory;
-import com.google.android.exoplayer2.SimpleExoPlayer;
-import com.google.android.exoplayer2.source.ExtractorMediaSource;
-import com.google.android.exoplayer2.source.MediaSource;
-import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
-import com.google.android.exoplayer2.ui.PlayerView;
-import com.google.android.exoplayer2.upstream.DataSource;
-import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
+
+
 import com.techweblearn.mediastreaming.EventBus.Events;
 import com.techweblearn.mediastreaming.EventBus.GlobalEventBus;
-import com.techweblearn.mediastreaming.Playback.StreamLoadController;
+
 import com.techweblearn.mediastreaming.R;
-import com.techweblearn.mediastreaming.Singleton.TorrentInfoSigleton;
-import com.techweblearn.mediastreaming.Streaming.StreamStatusExtended;
-import com.techweblearn.mediastreaming.Streaming.StreamingAsync;
+
 import com.techweblearn.mediastreaming.Streaming.StreamingService;
 
 import org.greenrobot.eventbus.Subscribe;
 
-import java.util.Objects;
 
 public class HomeActivity extends AppCompatActivity {
 
 
     public static final String TAG_URI = "uri";
     public static final String TAG = HomeActivity.class.getSimpleName();
-    private Torrent torrent;
-    private StreamStatus streamStatus;
     Uri playuri = Uri.parse(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS) + "/Test.mp4");
     Uri uri;
 
@@ -61,6 +36,7 @@ public class HomeActivity extends AppCompatActivity {
         ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},9);
 
         GlobalEventBus.getBus().register(this);
+
 
 
 

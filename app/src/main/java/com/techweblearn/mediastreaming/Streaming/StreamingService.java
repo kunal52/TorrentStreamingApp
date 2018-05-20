@@ -152,7 +152,8 @@ public class StreamingService extends Service {
 
         if (uri != null) {
 
-            torrentStream.startStream("magnet:?xt=urn:btih:592b32cf0a987f3b9916ae66df24988ddcf01cd8&dn=Den+of+Thieves+2018+UNRATED+720p+BluRay+HEVC+x265-RMTeam+&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969&tr=udp%3A%2F%2Fzer0day.ch%3A1337&tr=udp%3A%2F%2Fopen.demonii.com%3A1337&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969&tr=udp%3A%2F%2Fexodus.desync.com%3A6969");
+          //  torrentStream.startStream("magnet:?xt=urn:btih:592b32cf0a987f3b9916ae66df24988ddcf01cd8&dn=Den+of+Thieves+2018+UNRATED+720p+BluRay+HEVC+x265-RMTeam+&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969&tr=udp%3A%2F%2Fzer0day.ch%3A1337&tr=udp%3A%2F%2Fopen.demonii.com%3A1337&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969&tr=udp%3A%2F%2Fexodus.desync.com%3A6969");
+            torrentStream.startStream(uri.toString());
             Log.d("URI","TORRENT");
 
         }
