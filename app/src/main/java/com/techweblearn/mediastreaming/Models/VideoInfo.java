@@ -60,6 +60,11 @@ public class VideoInfo implements Parcelable {
         return duration;
     }
 
+    public void setDuration(long duration)
+    {
+        this.duration=duration;
+    }
+
     @Override
     public int describeContents() {
         return 0;

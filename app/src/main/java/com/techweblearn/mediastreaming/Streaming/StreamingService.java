@@ -90,13 +90,13 @@ public class StreamingService extends Service {
                 duration = Long.parseLong(mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION));
                 bitrate = Integer.parseInt(mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_BITRATE));
                 size=torrent.getVideoFile().length();
-                String title=torrent.getVideoFile().getName();
-                String filepath=torrent.getVideoFile().getAbsolutePath();
 
-                streamStarted(new VideoInfo(title,filepath,size,bitrate,duration));
+
+
                 }catch (Exception e){
                     isNew=true;
                 }
+
             }
 
             @Override
@@ -111,10 +111,16 @@ public class StreamingService extends Service {
                 Log.d("DURATION", String.valueOf(duration));
                 Log.d("BITRATE", String.valueOf(bitrate));
 
+                MediaMetadataRetriever mediaMetadataRetriever = new MediaMetadataRetriever();
+                mediaMetadataRetriever.setDataSource(torrent.getSaveLocation().getAbsolutePath());
+                duration = Long.parseLong(mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION));
+                bitrate = Integer.parseInt(mediaMetadataRetriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_BITRATE));
+                size=torrent.getVideoFile().length();
+                String title=torrent.getVideoFile().getName();
+                String filepath=torrent.getVideoFile().getAbsolutePath();
 
 
-
-
+                GlobalEventBus.getBus().post(new Events.StreamStartedBus(new VideoInfo(title,filepath,size,bitrate,duration)));
                 GlobalEventBus.getBus().post(new Events.StreamReadyBus());
 
 
@@ -125,18 +131,13 @@ public class StreamingService extends Service {
             public void onStreamProgress(Torrent torrent, StreamStatus streamStatus) {
 
 
-                if(isNew) {
-                    String title=torrent.getVideoFile().getName();
-                    String filepath=torrent.getVideoFile().getAbsolutePath();
-                    streamStarted(new VideoInfo(title, filepath, size, bitrate, duration));
-                    isNew=false;
-                }
-
                 Log.d(TAG, "Buffer Progress : " + streamStatus.bufferProgress);
                 Log.d(TAG, "Progress : " + streamStatus.progress);
                 Log.d(TAG, "Download Speed : " + streamStatus.downloadSpeed);
                 Log.d(TAG, "Seeds : " + streamStatus.seeds);
 
+
+                if(streamStatus.bufferProgress==100)
 
                 GlobalEventBus.getBus().post(new Events.StreamStatusBus(streamStatus));
 
@@ -156,14 +157,6 @@ public class StreamingService extends Service {
 
         }
 
-    }
-
-
-
-
-    private void streamStarted(VideoInfo videoInfo)
-    {
-           GlobalEventBus.getBus().post(new Events.StreamStartedBus(videoInfo));
     }
 
 

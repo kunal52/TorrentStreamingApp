@@ -45,7 +45,7 @@ public class ExoPlayerVideoHandler
                 // Create a new player if the player is null or
                 // we want to play a new video
                 playerUri = uri;
-                streamLoadController=new StreamLoadController(context);
+                streamLoadController=new StreamLoadController();
 
                 player= ExoPlayerFactory.newSimpleInstance(new DefaultRenderersFactory(context),new DefaultTrackSelector(),streamLoadController);
 

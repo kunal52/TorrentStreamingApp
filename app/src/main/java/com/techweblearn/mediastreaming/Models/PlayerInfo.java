@@ -10,6 +10,11 @@ public class PlayerInfo implements Parcelable {
     private long currentProgress;
 
     public PlayerInfo() {
+
+        bufferedPercentage=0;
+        bufferedProgress=0;
+        currentProgress=0;
+
     }
 
     public PlayerInfo(long bufferedProgress, int bufferedPercentage, long currentProgress) {

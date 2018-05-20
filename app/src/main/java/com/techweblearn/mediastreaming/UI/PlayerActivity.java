@@ -77,8 +77,7 @@ public class PlayerActivity extends AppCompatActivity implements SimpleExoPlayer
         seekBar=findViewById(R.id.exo_progress_custom);
         seekBar.setOnSeekBarChangeListener(this);
 
-        ActivityCompat.requestPermissions(this,new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE},9);
-        handler=new Handler();
+         handler=new Handler();
 
         playerView=findViewById(R.id.player_view);
         playerInfo=new PlayerInfo();
@@ -86,6 +85,7 @@ public class PlayerActivity extends AppCompatActivity implements SimpleExoPlayer
 
         if(getIntent()!=null) {
             videoInfo=getIntent().getParcelableExtra("videoinfo");
+            initPlayer(Uri.parse(videoInfo.getFilePath()));
         }
 
 
@@ -129,6 +129,7 @@ public class PlayerActivity extends AppCompatActivity implements SimpleExoPlayer
         ExoPlayerVideoHandler.getInstance().addListener(this);
         player=ExoPlayerVideoHandler.getInstance().getPlayer();
         ExoPlayerVideoHandler.getInstance().getStreamLoadController().setVideoInfo(videoInfo);
+        ExoPlayerVideoHandler.getInstance().getStreamLoadController().setPlayerInfo(playerInfo);
         initProgressBar();
     }
 
@@ -239,6 +240,11 @@ public class PlayerActivity extends AppCompatActivity implements SimpleExoPlayer
 
     private void updateProgressBar(Runnable runnable) {
 
+        if(videoInfo.getDuration()<100)
+        {
+
+        }
+
         playerInfo.setBufferedPercentage(player.getBufferedPercentage());
         playerInfo.setBufferedProgress(player.getBufferedPosition());
         playerInfo.setCurrentProgress(player.getContentPosition());
@@ -288,7 +294,7 @@ public class PlayerActivity extends AppCompatActivity implements SimpleExoPlayer
     @Subscribe
    public void StreamReady(Events.StreamReadyBus streamReadyBus)
     {
-        initPlayer(Uri.parse(videoInfo.getFilePath()));
+       // initPlayer(Uri.parse(videoInfo.getFilePath()));
 
     }
 
@@ -296,15 +302,13 @@ public class PlayerActivity extends AppCompatActivity implements SimpleExoPlayer
     public void StreamStatus(Events.StreamStatusBus streamStatusBus)
     {
 
-        if(streamStatusBus.getStreamStatus().progress==100)
+       /* if(streamStatusBus.getStreamStatus().progress==100)
         {
             initPlayer(Uri.parse(videoInfo.getFilePath()));
-        }
+        }*/
         try {
-
-
         ExoPlayerVideoHandler.getInstance().getStreamLoadController().setStreamStatus(streamStatusBus.getStreamStatus());
-        }catch (Exception e){}
+        }catch (Exception e){e.printStackTrace();}
     }
 
 }
