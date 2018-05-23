@@ -1,25 +1,14 @@
 package com.techweblearn.mediastreaming.Playback;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.support.v4.content.LocalBroadcastManager;
-import android.util.Log;
 
+import android.util.Log;
 
 import com.github.se_bastiaan.torrentstream.StreamStatus;
 import com.google.android.exoplayer2.DefaultLoadControl;
-import com.techweblearn.mediastreaming.EventBus.Events;
-import com.techweblearn.mediastreaming.EventBus.GlobalEventBus;
 import com.techweblearn.mediastreaming.Models.PlayerInfo;
 import com.techweblearn.mediastreaming.Models.VideoInfo;
-import com.techweblearn.mediastreaming.Streaming.StreamStatusExtended;
 import com.techweblearn.mediastreaming.Utils.Utils;
 
-import org.greenrobot.eventbus.Subscribe;
-
-import java.util.Objects;
 
 public class StreamLoadController extends DefaultLoadControl  {
 

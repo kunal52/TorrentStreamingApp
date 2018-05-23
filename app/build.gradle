@@ -21,23 +21,52 @@ android {
             jniLibs.srcDirs 'imported-lib/src/', 'more-imported-libs/src/'
         }
     }
+
     buildToolsVersion '27.0.3'
+}
+
+ext {
+    libtorrentVersion = '1.2.0.16'
+    compatVersion= '27.1.1'
+    roomVersion = '1.1.0'
+    archLifecycleVersion = '1.1.1'
 }
 
 dependencies {
     implementation fileTree(include: ['*.jar', '*.aar'], dir: 'libs')
-    implementation(name: 'libvlc-3.0.0', ext: 'aar')
     implementation 'com.android.support:appcompat-v7:27.1.1'
+    implementation 'com.android.support:design:27.1.1'
+    implementation 'com.android.support:recyclerview-v7:27.1.1'
+    implementation 'com.android.support:cardview-v7:27.1.1'
     implementation 'com.android.support.constraint:constraint-layout:1.1.0'
     implementation 'com.google.android.exoplayer:exoplayer:2.7.3'
     implementation 'com.android.support:support-v4:27.1.1'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'com.android.support.test:runner:1.0.2'
-    implementation 'com.github.TorrentStream:TorrentStream-Android:2.5.0'
+    //    implementation 'com.github.TorrentStream:TorrentStream-Android:2.5.0'
     implementation 'org.greenrobot:eventbus:3.1.1'
+    implementation 'com.jakewharton:butterknife:8.8.1'
+    annotationProcessor 'com.jakewharton:butterknife-compiler:8.8.1'
+
     //  compile 'de.mrmaffen:libvlc-android:2.1.12@aar'
     //implementation "de.mrmaffen:vlc-android-sdk:1.9.8"
     androidTestImplementation 'com.android.support.test.espresso:espresso-core:3.0.2'
-    // https://mvnrepository.com/artifact/org.nanohttpd/nanohttpd
-    implementation 'org.nanohttpd:nanohttpd:2.3.1'
+    implementation 'com.github.DeveloperPaul123:FilePickerLibrary:3.5.1'
+    implementation files('libs/jars/torrentStream.jar')
+
+
+    implementation "com.frostwire:jlibtorrent:$libtorrentVersion"
+    implementation "com.frostwire:jlibtorrent-android-arm:$libtorrentVersion"
+    implementation "com.frostwire:jlibtorrent-android-arm64:$libtorrentVersion"
+    implementation "com.frostwire:jlibtorrent-android-x86:$libtorrentVersion"
+    implementation "com.frostwire:jlibtorrent-android-x86_64:$libtorrentVersion"
+
+    implementation "android.arch.persistence.room:runtime:$roomVersion"
+    annotationProcessor "android.arch.persistence.room:compiler:$roomVersion"
+    androidTestImplementation "android.arch.persistence.room:testing:$roomVersion"
+
+// Lifecycle components
+    implementation "android.arch.lifecycle:extensions:$archLifecycleVersion"
+    annotationProcessor "android.arch.lifecycle:compiler:$archLifecycleVersion"
+
 }

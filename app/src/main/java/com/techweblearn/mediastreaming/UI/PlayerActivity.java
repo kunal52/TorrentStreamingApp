@@ -1,22 +1,20 @@
 package com.techweblearn.mediastreaming.UI;
 
-import android.Manifest;
-import android.content.BroadcastReceiver;
-import android.content.Context;
+import android.content.ComponentName;
 import android.content.Intent;
-import android.content.IntentFilter;
+import android.content.ServiceConnection;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.LocalBroadcastManager;
+import android.os.IBinder;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.support.v7.widget.AppCompatSeekBar;
 import android.util.Log;
 import android.view.View;
 import android.widget.SeekBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.google.android.exoplayer2.ExoPlaybackException;
@@ -26,47 +24,72 @@ import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.Timeline;
 import com.google.android.exoplayer2.source.TrackGroupArray;
 import com.google.android.exoplayer2.trackselection.TrackSelectionArray;
-import com.google.android.exoplayer2.ui.DefaultTimeBar;
 import com.google.android.exoplayer2.ui.PlayerView;
 import com.techweblearn.mediastreaming.EventBus.Events;
 import com.techweblearn.mediastreaming.EventBus.GlobalEventBus;
+import com.techweblearn.mediastreaming.Models.PlayerInfo;
 import com.techweblearn.mediastreaming.Models.VideoInfo;
 import com.techweblearn.mediastreaming.Playback.ExoPlayerVideoHandler;
-import com.techweblearn.mediastreaming.Models.PlayerInfo;
-import com.techweblearn.mediastreaming.Playback.StreamLoadController;
 import com.techweblearn.mediastreaming.R;
-import com.techweblearn.mediastreaming.Streaming.StreamStatusExtended;
+import com.techweblearn.mediastreaming.Streaming.StreamingService;
 
 import org.greenrobot.eventbus.Subscribe;
 
-import java.util.Objects;
+import butterknife.BindView;
 
 public class PlayerActivity extends AppCompatActivity implements SimpleExoPlayer.EventListener, SeekBar.OnSeekBarChangeListener {
 
+
+
     public static final String TAG=PlayerActivity.class.getSimpleName();
+
+
+    @BindView(R.id.movie_title)TextView movie_title;
+
 
     SimpleExoPlayer player;
     PlayerView playerView;
     Uri playuri= Uri.parse(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)+"/Test.mp4");
-    DefaultTimeBar timeBar;
     AppCompatSeekBar seekBar;
     Handler handler;
     int playBackState=Player.STATE_IDLE;
-    int durationSec;
-    long buffered;
     boolean isDragging=false;
-    StreamStatusExtended streamStatusExtended;
-    StreamLoadController streamLoadController;
+
     VideoInfo videoInfo;
     PlayerInfo playerInfo;
-
+    StreamingService streamingService;
+    boolean mBounded;
 
     @Override
     protected void onStart() {
         super.onStart();
+        Intent mIntent = new Intent(this, StreamingService.class);
+        bindService(mIntent, mConnection, BIND_AUTO_CREATE);
 
 
     }
+
+    ServiceConnection mConnection=new ServiceConnection() {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder service) {
+            Log.d("SERVICE BIND","Connected");
+            Toast.makeText(PlayerActivity.this, "Service Connected", Toast.LENGTH_SHORT).show();
+            mBounded=true;
+            StreamingService.LocalBinder mLocalBinder = (StreamingService.LocalBinder)service;
+            streamingService = mLocalBinder.getServerInstance();
+
+        }
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
+            Log.d("SERVICE BIND","DisConnected");
+            Toast.makeText(PlayerActivity.this, "Service Dsiconnected", Toast.LENGTH_SHORT).show();
+
+            mBounded=false;
+            streamingService = null;
+        }
+    };
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -97,6 +120,8 @@ public class PlayerActivity extends AppCompatActivity implements SimpleExoPlayer
         super.onResume();
         hideStatusBar();
         ExoPlayerVideoHandler.getInstance().goToForeground();
+        if(streamingService!=null)
+        streamingService.resumeStream();
     }
 
 
@@ -104,6 +129,8 @@ public class PlayerActivity extends AppCompatActivity implements SimpleExoPlayer
     protected void onPause() {
         super.onPause();
         ExoPlayerVideoHandler.getInstance().goToBackground();
+        if(streamingService!=null)
+        streamingService.pauseStream();
     }
 
     @Override
@@ -131,6 +158,7 @@ public class PlayerActivity extends AppCompatActivity implements SimpleExoPlayer
         ExoPlayerVideoHandler.getInstance().getStreamLoadController().setVideoInfo(videoInfo);
         ExoPlayerVideoHandler.getInstance().getStreamLoadController().setPlayerInfo(playerInfo);
         initProgressBar();
+       // movie_title.setText(videoInfo.getTitle());
     }
 
 
@@ -240,16 +268,14 @@ public class PlayerActivity extends AppCompatActivity implements SimpleExoPlayer
 
     private void updateProgressBar(Runnable runnable) {
 
-        if(videoInfo.getDuration()<100)
-        {
 
-        }
 
         playerInfo.setBufferedPercentage(player.getBufferedPercentage());
         playerInfo.setBufferedProgress(player.getBufferedPosition());
         playerInfo.setCurrentProgress(player.getContentPosition());
 
         ExoPlayerVideoHandler.getInstance().getStreamLoadController().setPlayerInfo(playerInfo);
+
 
         Log.d(TAG, String.valueOf(player.getDuration()));
         Log.d(TAG, String.valueOf(player.getCurrentPosition()));
@@ -261,6 +287,9 @@ public class PlayerActivity extends AppCompatActivity implements SimpleExoPlayer
             seekBar.setProgress(progressBarValueInSec(player.getCurrentPosition()),true);
         else
             seekBar.setProgress(progressBarValueInSec(player.getCurrentPosition()));
+
+        seekBar.setSecondaryProgress(progressBarValueInSec(player.getBufferedPosition()));
+
         handler.postDelayed(runnable,1000);
     }
 

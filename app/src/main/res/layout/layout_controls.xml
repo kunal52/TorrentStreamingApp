@@ -10,13 +10,38 @@
      See the License for the specific language governing permissions and
      limitations under the License.
 -->
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:layout_gravity="bottom"
-    android:layoutDirection="ltr"
-    android:background="#CC000000"
-    android:orientation="vertical">
+    android:layout_height="match_parent"
+    >
+
+    <LinearLayout
+        android:layoutDirection="ltr"
+        android:background="#CC000000"
+        android:layout_margin="16dp"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <TextView
+            android:id="@+id/movie_title"
+            android:textColor="#FFBEBEBE"
+            android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+            android:text="Black Panther"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:layout_gravity="bottom"
+        android:layoutDirection="ltr"
+        android:background="#CC000000"
+        android:layout_margin="16dp"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -30,10 +55,10 @@
 <!--        <ImageButton android:id="@id/exo_rew"
             style="@style/ExoMediaButton.Rewind"/>-->
 
-        <ImageButton android:id="@id/exo_play"
+        <android.support.design.widget.FloatingActionButton android:id="@id/exo_play"
             style="@style/ExoMediaButton.Play"/>
 
-        <ImageButton android:id="@id/exo_pause"
+        <android.support.design.widget.FloatingActionButton android:id="@id/exo_pause"
             style="@style/ExoMediaButton.Pause"/>
 
 <!--        <ImageButton android:id="@id/exo_ffwd"
@@ -61,6 +86,7 @@
             android:textColor="#FFBEBEBE"/>
 
         <android.support.v7.widget.AppCompatSeekBar
+            android:visibility="invisible"
             android:id="@+id/exo_progress_custom"
             android:layout_width="0dp"
             android:layout_weight="1"
@@ -78,4 +104,6 @@
 
     </LinearLayout>
 
-</LinearLayout>
+    </LinearLayout>
+
+</FrameLayout>
