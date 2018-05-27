@@ -4,4 +4,13 @@
     <string name="title_activity_fullscreen">FullscreenActivity</string>
     <string name="dummy_button">Dummy Button</string>
     <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="gathering_torrent_info">Gathering Torrent Info</string>
+    <string name="please_wait">Please Wait..</string>
+    <string name="cancel">Cancel</string>
+
+    <string name="title_activity_splash_screen">SplashScreen</string>
+    <string name="nothing_is_playing">Nothing is Playing..</string>
+    <string name="connecting_seeds">Connecting Seeds</string>
+    <string name="no_movie">No Movie</string>
+    <string name="_0">0%</string>
 </resources>

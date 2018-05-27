@@ -25,15 +25,117 @@
         android:layout_marginTop="?attr/actionBarSize"
         android:id="@+id/torrent_file_list_recyclerview"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"/>
+        android:layout_height="match_parent"
+        android:layout_marginBottom="72dp"/>
 
     <android.support.design.widget.FloatingActionButton
-        android:src="@drawable/ic_add__24dp"
-        android:layout_margin="16dp"
-        android:layout_gravity="bottom|end"
-        android:elevation="6dp"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end"
+        android:layout_margin="16dp"
+        android:elevation="6dp"
+        android:src="@drawable/ic_add__24dp"
+        android:visibility="gone" />
+
+
+    <RelativeLayout
+        android:background="@color/colorPrimary"
+        android:id="@+id/bottom_play_layout"
+        android:layout_width="match_parent"
+        android:layout_height="72dp"
+        android:layout_gravity="bottom"
+        android:orientation="horizontal"
+        android:padding="8dp"
+        android:visibility="visible">
+
+        <TextView
+            android:maxLines="1"
+            android:layout_toLeftOf="@id/play_imagebutton"
+            android:layout_marginEnd="16dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginBottom="8dp"
+            android:id="@+id/movie_title_textview"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="@string/no_movie"
+            android:textAppearance="@style/Base.TextAppearance.AppCompat.Subhead" />
+
+
+        <ProgressBar
+            android:id="@+id/bottom_progressBar"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_alignParentStart="true"
+            android:layout_below="@id/movie_title_textview"
+            android:layout_centerVertical="true"
+            android:layout_marginStart="17dp" />
+
+        <ImageButton
+            android:visibility="invisible"
+            android:clickable="false"
+            android:layout_toStartOf="@id/stop_imagebutton"
+            android:layout_centerVertical="true"
+            android:background="@color/transparent"
+            android:src="@drawable/ic_play_arrow_black_24dp"
+            android:id="@+id/play_imagebutton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+        <ImageButton
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:background="@color/transparent"
+            android:src="@drawable/ic_close_black_24dp"
+            android:id="@+id/stop_imagebutton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+
+        <TextView
+            android:layout_marginStart="8dp"
+            android:layout_toEndOf="@id/bottom_progressBar"
+            android:layout_below="@id/movie_title_textview"
+            android:textAppearance="@style/Base.TextAppearance.AppCompat.Body1"
+            android:id="@+id/status_textview"
+            android:text="@string/connecting_seeds"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+
+        <TextView
+            android:layout_marginStart="16dp"
+            android:layout_below="@id/movie_title_textview"
+            android:layout_toEndOf="@id/status_textview"
+            android:textAppearance="@style/Base.TextAppearance.AppCompat.Body1"
+            android:id="@+id/status_percentage_textview"
+            android:text="@string/_0"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+    </RelativeLayout>
+
+    <RelativeLayout
+        android:background="@color/colorPrimary"
+        android:id="@+id/bottom_play_layout_noplay"
+        android:layout_width="match_parent"
+        android:layout_height="72dp"
+        android:layout_gravity="bottom"
+        android:orientation="horizontal"
+        android:padding="8dp"
+        android:visibility="visible">
+
+        <TextView
+            android:layout_centerInParent="true"
+            android:textAppearance="@style/Base.TextAppearance.AppCompat.Title"
+            android:text="@string/nothing_is_playing"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+
+
+
+
+    </RelativeLayout>
+
 
 
 </FrameLayout>

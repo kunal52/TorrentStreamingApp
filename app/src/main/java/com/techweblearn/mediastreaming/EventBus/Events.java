@@ -92,6 +92,12 @@ public class Events {
         }
 
 
+        public static class StreamPrepared
+        {
+            public StreamPrepared() {
+            }
+        }
+
 
 
 }

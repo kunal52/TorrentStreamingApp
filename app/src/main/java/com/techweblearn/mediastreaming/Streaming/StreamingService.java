@@ -32,8 +32,10 @@ public class StreamingService extends Service {
     long duration;
     int bitrate;
     long size;
+    StreamStatus streamStatus;
     IBinder iBinder=new LocalBinder();
-
+    boolean isStreaming;
+    Torrent currentTorrent;
 
     public class LocalBinder extends Binder {
         public StreamingService getServerInstance() {
@@ -59,6 +61,7 @@ public class StreamingService extends Service {
                 .build();
 
         torrentStream = TorrentStream.init(torrentOptions);
+
     }
 
 
@@ -72,16 +75,17 @@ public class StreamingService extends Service {
 
 
 
-    public void initTorrent(Intent intent) {
+    public void initTorrent(Uri uri) {
 
-        Uri uri= Uri.parse(intent.getStringExtra("uri"));
 
         torrentStream.addListener(new TorrentListener() {
             @Override
             public void onStreamPrepared(Torrent torrent) {
                 Log.d(TAG, "Prepared");
 
-
+                GlobalEventBus.getBus().post(new Events.StreamPrepared());
+                isStreaming=true;
+                currentTorrent=torrent;
             }
 
             @Override
@@ -89,7 +93,6 @@ public class StreamingService extends Service {
                 Log.d(TAG, "Started");
 
                 try {
-
 
                 MediaMetadataRetriever mediaMetadataRetriever = new MediaMetadataRetriever();
                 mediaMetadataRetriever.setDataSource(torrent.getSaveLocation().getAbsolutePath());
@@ -101,6 +104,7 @@ public class StreamingService extends Service {
                 }catch (Exception e){
                     isNew=true;
                 }
+
 
             }
 
@@ -127,6 +131,7 @@ public class StreamingService extends Service {
                 String filepath=torrent.getVideoFile().getAbsolutePath();
 
 
+
                 GlobalEventBus.getBus().post(new Events.StreamStartedBus(new VideoInfo(title,filepath,size,bitrate,duration)));
                 GlobalEventBus.getBus().post(new Events.StreamReadyBus());
 
@@ -138,11 +143,12 @@ public class StreamingService extends Service {
             public void onStreamProgress(Torrent torrent, StreamStatus streamStatus) {
 
 
+                StreamingService.this.streamStatus=streamStatus;
+
                 Log.d(TAG, "Buffer Progress : " + streamStatus.bufferProgress);
                 Log.d(TAG, "Progress : " + streamStatus.progress);
                 Log.d(TAG, "Download Speed : " + streamStatus.downloadSpeed);
                 Log.d(TAG, "Seeds : " + streamStatus.seeds);
-
 
                 if(streamStatus.bufferProgress==100)
 
@@ -153,6 +159,7 @@ public class StreamingService extends Service {
             @Override
             public void onStreamStopped() {
                 Log.d(TAG, "Stopped");
+                isStreaming=false;
             }
         });
 
@@ -164,14 +171,11 @@ public class StreamingService extends Service {
             Log.d("URI",uri.toString());
             Log.d("URI",uri.getPath());
 
-
-
             torrentStream.setContentResolver(getContentResolver());
             TorrentInfo torrentInfo;
             try {
                 torrentInfo=torrentStream.getTorrentInfo(uri.toString());
                 Log.d(TAG, String.valueOf(torrentInfo.numFiles()));
-
 
             } catch (TorrentInfoException e) {
                 e.printStackTrace();
@@ -195,7 +199,33 @@ public class StreamingService extends Service {
         Log.d(TAG,"Resume");
     }
 
+    public void setInterestedBytes(long interestedBytes)
+    {
+        torrentStream.getCurrentTorrent().setInterestedBytes(interestedBytes);
+    }
+
+    public void stopStream()
+    {
+        torrentStream.stopStream();
+    }
+
+    public void getStatus()
+    {
+        if(isStreaming)
+        streamStatusListener.getStreamStatus(currentTorrent.getVideoFile().getName(),streamStatus);
+    }
 
 
+    OnStreamStatusListener streamStatusListener;
+    public interface OnStreamStatusListener
+    {
+
+        void getStreamStatus(String name,StreamStatus streamStatus);
+
+    }
+    public void setStreamStatusListener(OnStreamStatusListener streamStatusListener)
+    {
+        this.streamStatusListener=streamStatusListener;
+    }
 
 }

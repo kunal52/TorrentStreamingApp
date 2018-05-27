@@ -8,4 +8,6 @@ public interface HomeActivityViewInter {
     void onCompleted(ArrayList<File> files);
     void onError();
     void onPermissionError();
+    void onCompleted(File file);
+    void onError(String message);
 }

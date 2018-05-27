@@ -5,9 +5,7 @@ import android.net.Uri;
 import android.view.SurfaceView;
 
 import com.google.android.exoplayer2.DefaultRenderersFactory;
-import com.google.android.exoplayer2.ExoPlayer;
 import com.google.android.exoplayer2.ExoPlayerFactory;
-import com.google.android.exoplayer2.Player;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
@@ -15,13 +13,12 @@ import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.ui.PlayerView;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
-import com.techweblearn.mediastreaming.Models.VideoInfo;
-import com.techweblearn.mediastreaming.Streaming.StreamStatusExtended;
-
-import java.util.EventListener;
 
 public class ExoPlayerVideoHandler
 {
+    public static final int RENDERER_COUNT = 4;
+    public static final int DEFAULT_MIN_BUFFER_MS = 1000;
+    public static final int DEFAULT_MIN_REBUFFER_MS = 5000;
     private static ExoPlayerVideoHandler instance;
 
     public static ExoPlayerVideoHandler getInstance(){
@@ -63,6 +60,7 @@ public class ExoPlayerVideoHandler
             player.seekTo(player.getCurrentPosition() + 1);
             exoPlayerView.setPlayer(player);
             player.setPlayWhenReady(true);
+
 
 
         }

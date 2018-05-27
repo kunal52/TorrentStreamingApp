@@ -27,7 +27,7 @@ android {
 
 ext {
     libtorrentVersion = '1.2.0.16'
-    compatVersion= '27.1.1'
+    compatVersion = '27.1.1'
     roomVersion = '1.1.0'
     archLifecycleVersion = '1.1.1'
 }
