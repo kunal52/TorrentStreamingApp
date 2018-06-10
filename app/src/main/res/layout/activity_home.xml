@@ -5,6 +5,25 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
+
+    <TextView
+        android:id="@+id/no_torrent_file_text"
+        android:visibility="gone"
+        android:layout_margin="16dp"
+        android:textAlignment="center"
+        android:text="@string/no_torrent_file_found_on_device"
+        android:textAppearance="@style/Base.TextAppearance.AppCompat.Display1"
+        android:layout_gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_gravity="center"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
+
+
     <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize">
@@ -108,7 +127,6 @@
             android:layout_toEndOf="@id/status_textview"
             android:textAppearance="@style/Base.TextAppearance.AppCompat.Body1"
             android:id="@+id/status_percentage_textview"
-            android:text="@string/_0"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content" />
 

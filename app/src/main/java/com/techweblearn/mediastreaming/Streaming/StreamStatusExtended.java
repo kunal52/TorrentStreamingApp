@@ -13,15 +13,21 @@ public class StreamStatusExtended implements Parcelable {
     private  long size;
     private  int bitrate;
     private  long duration;
+    private long downloadedBytes;
 
-    public StreamStatusExtended(float progress, int bufferProgress, int seeds, float downloadSpeed, long size, int bitrate,long duration) {
+
+    public StreamStatusExtended() {
+    }
+
+    public StreamStatusExtended(float progress, int bufferProgress, int seeds, float downloadSpeed, long size, int bitrate, long duration, long downloadedBytes) {
         this.progress = progress;
         this.bufferProgress = bufferProgress;
         this.seeds = seeds;
         this.downloadSpeed = downloadSpeed;
         this.size = size;
         this.bitrate = bitrate;
-        this.duration=duration;
+        this.duration = duration;
+        this.downloadedBytes = downloadedBytes;
     }
 
     protected StreamStatusExtended(Parcel in) {
@@ -32,6 +38,7 @@ public class StreamStatusExtended implements Parcelable {
         size = in.readLong();
         bitrate = in.readInt();
         duration = in.readLong();
+        downloadedBytes = in.readLong();
     }
 
     @Override
@@ -43,6 +50,7 @@ public class StreamStatusExtended implements Parcelable {
         dest.writeLong(size);
         dest.writeInt(bitrate);
         dest.writeLong(duration);
+        dest.writeLong(downloadedBytes);
     }
 
     @Override
@@ -118,6 +126,14 @@ public class StreamStatusExtended implements Parcelable {
         this.duration = duration;
     }
 
+    public long getDownloadedBytes() {
+        return downloadedBytes;
+    }
+
+    public void setDownloadedBytes(long downloadedBytes) {
+        this.downloadedBytes = downloadedBytes;
+    }
+
     @Override
     public String toString() {
         return "StreamStatusExtended{" +
@@ -128,6 +144,7 @@ public class StreamStatusExtended implements Parcelable {
                 ", size=" + size +
                 ", bitrate=" + bitrate +
                 ", duration=" + duration +
+                ", downloadedBytes=" + downloadedBytes +
                 '}';
     }
 }

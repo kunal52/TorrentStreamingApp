@@ -1,12 +1,19 @@
 package com.techweblearn.mediastreaming.Streaming;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.media.MediaMetadataRetriever;
 import android.net.Uri;
 import android.os.Binder;
+import android.os.Build;
 import android.os.Environment;
+import android.os.Handler;
 import android.os.IBinder;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import com.frostwire.jlibtorrent.TorrentInfo;
@@ -19,6 +26,8 @@ import com.github.se_bastiaan.torrentstream.listeners.TorrentListener;
 import com.techweblearn.mediastreaming.EventBus.Events;
 import com.techweblearn.mediastreaming.EventBus.GlobalEventBus;
 import com.techweblearn.mediastreaming.Models.VideoInfo;
+import com.techweblearn.mediastreaming.R;
+import com.techweblearn.mediastreaming.UI.HomeActivity;
 
 
 public class StreamingService extends Service {
@@ -36,6 +45,15 @@ public class StreamingService extends Service {
     IBinder iBinder=new LocalBinder();
     boolean isStreaming;
     Torrent currentTorrent;
+    Handler handler;
+    public static final String CHANNEL_ID="streamingnotification";
+    Intent intent;
+    private NotificationManager notificationManager;
+    private NotificationCompat.Builder build;
+    long bytes_downloaded=1024;
+    int increment=1024*1024;
+    StreamStatusExtended streamStatusExtended;
+    Runnable runnable;
 
     public class LocalBinder extends Binder {
         public StreamingService getServerInstance() {
@@ -61,13 +79,18 @@ public class StreamingService extends Service {
                 .build();
 
         torrentStream = TorrentStream.init(torrentOptions);
+        notificationManager= (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
+
+        handler=new Handler();
+
+        streamStatusExtended=new StreamStatusExtended();
+
 
     }
 
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-
 
 
         return START_STICKY;
@@ -77,6 +100,21 @@ public class StreamingService extends Service {
 
     public void initTorrent(Uri uri) {
 
+
+        runnable=new Runnable() {
+            @Override
+            public void run() {
+                handler.postDelayed(this,1000);
+                if(currentTorrent.hasBytes(bytes_downloaded)){
+                    bytes_downloaded+=increment;
+                }
+                streamStatusExtended.setDownloadedBytes(bytes_downloaded);
+
+                GlobalEventBus.getBus().post(new Events.StreamStatusExtendedBus(streamStatusExtended));
+            }
+        };
+
+       handler.postDelayed(runnable,1000);
 
         torrentStream.addListener(new TorrentListener() {
             @Override
@@ -105,6 +143,10 @@ public class StreamingService extends Service {
                     isNew=true;
                 }
 
+                currentTorrent=torrent;
+
+                createNotification();
+
 
             }
 
@@ -118,9 +160,7 @@ public class StreamingService extends Service {
             @Override
             public void onStreamReady(Torrent torrent) {
 
-                Log.d(TAG, "Ready");
-                Log.d("DURATION", String.valueOf(duration));
-                Log.d("BITRATE", String.valueOf(bitrate));
+                currentTorrent=torrent;
 
                 MediaMetadataRetriever mediaMetadataRetriever = new MediaMetadataRetriever();
                 mediaMetadataRetriever.setDataSource(torrent.getVideoFile().getAbsolutePath());
@@ -130,10 +170,14 @@ public class StreamingService extends Service {
                 String title=torrent.getVideoFile().getName();
                 String filepath=torrent.getVideoFile().getAbsolutePath();
 
+                streamStatusExtended.setSize(size);
+                streamStatusExtended.setDuration(duration);
+                streamStatusExtended.setBitrate(bitrate);
+
 
 
                 GlobalEventBus.getBus().post(new Events.StreamStartedBus(new VideoInfo(title,filepath,size,bitrate,duration)));
-                GlobalEventBus.getBus().post(new Events.StreamReadyBus());
+                GlobalEventBus.getBus().post(new Events.StreamReadyBus(new VideoInfo(title,filepath,size,bitrate,duration)));
 
 
 
@@ -144,15 +188,24 @@ public class StreamingService extends Service {
 
 
                 StreamingService.this.streamStatus=streamStatus;
+                currentTorrent=torrent;
 
                 Log.d(TAG, "Buffer Progress : " + streamStatus.bufferProgress);
                 Log.d(TAG, "Progress : " + streamStatus.progress);
                 Log.d(TAG, "Download Speed : " + streamStatus.downloadSpeed);
                 Log.d(TAG, "Seeds : " + streamStatus.seeds);
 
-                if(streamStatus.bufferProgress==100)
 
-                GlobalEventBus.getBus().post(new Events.StreamStatusBus(streamStatus));
+                updateNotification(streamStatus);
+               // GlobalEventBus.getBus().post(new Events.StreamStatusBus(streamStatus));
+
+                streamStatusExtended.setBufferProgress(streamStatus.bufferProgress);
+                streamStatusExtended.setDownloadSpeed(streamStatus.downloadSpeed);
+                streamStatusExtended.setProgress(streamStatus.progress);
+                streamStatusExtended.setSeeds(streamStatus.seeds);
+
+
+
 
             }
 
@@ -206,13 +259,9 @@ public class StreamingService extends Service {
 
     public void stopStream()
     {
+        handler.removeCallbacks(runnable);
         torrentStream.stopStream();
-    }
-
-    public void getStatus()
-    {
-        if(isStreaming)
-        streamStatusListener.getStreamStatus(currentTorrent.getVideoFile().getName(),streamStatus);
+        notificationManager.cancel(30);
     }
 
 
@@ -220,12 +269,89 @@ public class StreamingService extends Service {
     public interface OnStreamStatusListener
     {
 
-        void getStreamStatus(String name,StreamStatus streamStatus);
+        void streamStatus(String filename,int bufferProgress,int progress);
 
     }
     public void setStreamStatusListener(OnStreamStatusListener streamStatusListener)
     {
         this.streamStatusListener=streamStatusListener;
+    }
+
+
+    private void createNotification()
+    {
+
+        intent = new Intent(this, HomeActivity.class);
+        PendingIntent resultPendingIntent =
+                PendingIntent.getActivity(
+                        this,
+                        0,
+                        intent,
+                        PendingIntent.FLAG_UPDATE_CURRENT
+                );
+
+        build = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setContentTitle("Streaming")
+                .setContentText("Connecting To Seeds")
+                .setProgress(100, 100, true)
+                .setSmallIcon(R.mipmap.ic_launcher)
+                .setContentIntent(resultPendingIntent)
+                .setShowWhen(false);
+
+
+
+        // Create the NotificationChannel, but only on API 26+ because
+        // the NotificationChannel class is new and not in the support library
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            CharSequence name = "Streaming";
+            String description = "Streaming Torrent";
+            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, name, importance);
+            channel.setDescription(description);
+            // Register the channel with the system; you can't change the importance
+            // or other notification behaviors after this
+            NotificationManager notificationManager = getSystemService(NotificationManager.class);
+            notificationManager.createNotificationChannel(channel);
+        }
+
+        notificationManager.notify(30,build.build());
+
+    }
+
+
+    private void updateNotification(StreamStatus streamStatus)
+    {
+
+        if(streamStatus.bufferProgress!=100)
+        {
+            build.setContentText("Buffering : "+streamStatus.bufferProgress+"%")
+                    .setProgress(100,streamStatus.bufferProgress,false);
+        }
+        else
+        {
+            build.setContentText("Progress : "+(int)streamStatus.progress+"%")
+                    .setProgress(100, (int) streamStatus.progress,false);
+        }
+
+        notificationManager.notify(30,build.build());
+
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        getApplicationContext().getSharedPreferences("stream", Context.MODE_PRIVATE).edit().clear().apply();
+        notificationManager.cancel(30);
+        Log.d(TAG, "onDestroy: Called");
+    }
+
+
+    @Override
+    public void onTaskRemoved(Intent rootIntent) {
+        super.onTaskRemoved(rootIntent);
+        getApplicationContext().getSharedPreferences("stream", Context.MODE_PRIVATE).edit().clear().apply();
+        notificationManager.cancel(30);
+        Log.d(TAG, "onTaskRemoved: Called");
     }
 
 }

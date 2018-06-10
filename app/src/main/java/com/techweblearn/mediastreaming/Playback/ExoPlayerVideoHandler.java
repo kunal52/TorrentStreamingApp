@@ -4,15 +4,20 @@ import android.content.Context;
 import android.net.Uri;
 import android.view.SurfaceView;
 
+import com.google.android.exoplayer2.C;
 import com.google.android.exoplayer2.DefaultRenderersFactory;
 import com.google.android.exoplayer2.ExoPlayerFactory;
+import com.google.android.exoplayer2.Format;
 import com.google.android.exoplayer2.SimpleExoPlayer;
 import com.google.android.exoplayer2.source.ExtractorMediaSource;
 import com.google.android.exoplayer2.source.MediaSource;
+import com.google.android.exoplayer2.source.MergingMediaSource;
+import com.google.android.exoplayer2.source.SingleSampleMediaSource;
 import com.google.android.exoplayer2.trackselection.DefaultTrackSelector;
 import com.google.android.exoplayer2.ui.PlayerView;
 import com.google.android.exoplayer2.upstream.DataSource;
 import com.google.android.exoplayer2.upstream.DefaultDataSourceFactory;
+import com.google.android.exoplayer2.util.MimeTypes;
 
 public class ExoPlayerVideoHandler
 {
@@ -20,6 +25,8 @@ public class ExoPlayerVideoHandler
     public static final int DEFAULT_MIN_BUFFER_MS = 1000;
     public static final int DEFAULT_MIN_REBUFFER_MS = 5000;
     private static ExoPlayerVideoHandler instance;
+    private DataSource.Factory dataSourFactory;
+    private MediaSource videoMediaSource;
 
     public static ExoPlayerVideoHandler getInstance(){
         if(instance == null){
@@ -46,13 +53,12 @@ public class ExoPlayerVideoHandler
 
                 player= ExoPlayerFactory.newSimpleInstance(new DefaultRenderersFactory(context),new DefaultTrackSelector(),streamLoadController);
 
-                DataSource.Factory data=new DefaultDataSourceFactory(context,"MediaStreaming");
-                ExtractorMediaSource.Factory vidoSource = new ExtractorMediaSource.Factory(data);
-                MediaSource mediaSource=vidoSource.createMediaSource(playerUri,null,null);
+                dataSourFactory=new DefaultDataSourceFactory(context,"TorrentStreaming");
+                ExtractorMediaSource.Factory vidoSource = new ExtractorMediaSource.Factory(dataSourFactory);
+                videoMediaSource=vidoSource.createMediaSource(playerUri,null,null);
+             //   player.prepare(addSubtitle(Uri.fromFile(new File(Environment.getExternalStorageDirectory()+"/Test.srt"))));
+                player.prepare(videoMediaSource);
 
-
-
-                player.prepare(mediaSource);
             }
             player.clearVideoSurface();
             player.setVideoSurfaceView(
@@ -61,12 +67,21 @@ public class ExoPlayerVideoHandler
             exoPlayerView.setPlayer(player);
             player.setPlayWhenReady(true);
 
-
-
         }
     }
 
+    private MediaSource addSubtitle(Uri subtitleUri)
+    {
+        Format textFormat = Format.createTextSampleFormat(null, MimeTypes.APPLICATION_SUBRIP,
+                null, Format.NO_VALUE, Format.NO_VALUE, "en", null, Format.OFFSET_SAMPLE_RELATIVE);
 
+        MediaSource subtitleSource=new SingleSampleMediaSource.Factory(dataSourFactory).createMediaSource(subtitleUri
+                , textFormat,C.TIME_UNSET);
+
+        return new MergingMediaSource(videoMediaSource,subtitleSource);
+
+
+    }
 
     public void addListener(SimpleExoPlayer.EventListener listener)
     {

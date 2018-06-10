@@ -81,7 +81,13 @@ public class Events {
 
         public static class StreamReadyBus
         {
-            public StreamReadyBus() {
+            VideoInfo videoInfo;
+            public StreamReadyBus(VideoInfo videoInfo) {
+                this.videoInfo = videoInfo;
+            }
+
+            public VideoInfo getVideoInfo() {
+                return videoInfo;
             }
         }
 
@@ -97,6 +103,17 @@ public class Events {
             public StreamPrepared() {
             }
         }
+
+
+        public static class HandlerTestEvent
+        {
+            public HandlerTestEvent() {
+
+            }
+        }
+
+
+
 
 
 

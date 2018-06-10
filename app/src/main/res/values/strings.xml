@@ -13,4 +13,9 @@
     <string name="connecting_seeds">Connecting Seeds</string>
     <string name="no_movie">No Movie</string>
     <string name="_0">0%</string>
+    <string name="no_torrent_file_found_on_device">No Torrent File Found On Device</string>
+    <string name="percent_sign">&#x0025;</string>
+    <string name="buffering">Buffering</string>
+    <string name="progress">Progress</string>
+
 </resources>

@@ -13,6 +13,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatSeekBar;
 import android.util.Log;
 import android.view.View;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.SeekBar;
@@ -44,7 +45,10 @@ import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.Unbinder;
 
-public class PlayerActivity extends AppCompatActivity implements SimpleExoPlayer.EventListener, SeekBar.OnSeekBarChangeListener, PlayerControlView.VisibilityListener {
+public class PlayerActivity extends AppCompatActivity implements SimpleExoPlayer.EventListener,
+        SeekBar.OnSeekBarChangeListener,
+        PlayerControlView.VisibilityListener,
+        View.OnClickListener{
 
 
 
@@ -53,6 +57,7 @@ public class PlayerActivity extends AppCompatActivity implements SimpleExoPlayer
     @BindView(R.id.title_bar)LinearLayout titlebarlayout;
     @BindView(R.id.movie_title)TextView movie_title;
     @BindView(R.id.buffer_progressbar)ProgressBar progressBar;
+    @BindView(R.id.back_button)ImageButton back_button;
 
     SimpleExoPlayer player;
     PlayerView playerView;
@@ -66,9 +71,9 @@ public class PlayerActivity extends AppCompatActivity implements SimpleExoPlayer
     PlayerInfo playerInfo;
     StreamingService streamingService;
     boolean mBounded;
-    boolean isbuffering;
     Unbinder unbinder;
     private StreamStatus streamStatus;
+    private StreamStatusExtended streamStatusExtended;
 
     @Override
     protected void onStart() {
@@ -87,6 +92,13 @@ public class PlayerActivity extends AppCompatActivity implements SimpleExoPlayer
             mBounded=true;
             StreamingService.LocalBinder mLocalBinder = (StreamingService.LocalBinder)service;
             streamingService = mLocalBinder.getServerInstance();
+            mBounded=true;
+            streamingService.setStreamStatusListener(new StreamingService.OnStreamStatusListener() {
+                @Override
+                public void streamStatus(String filename, int bufferProgress, int progress) {
+                    movie_title.setText(filename);
+                }
+            });
 
         }
 
@@ -110,49 +122,46 @@ public class PlayerActivity extends AppCompatActivity implements SimpleExoPlayer
         GlobalEventBus.getBus().register(this);
         seekBar=findViewById(R.id.exo_progress_custom);
         seekBar.setOnSeekBarChangeListener(this);
-
-         handler=new Handler();
-
+        handler=new Handler();
         playerView=findViewById(R.id.player_view);
         playerView.setControllerVisibilityListener(this);
         playerInfo=new PlayerInfo();
+        back_button.setOnClickListener(this);
 
+        //TODO CHAnge Tiks
 
+        Log.d(TAG, "onCreate: OnCreate");
+       // initTestPlayer(Uri.parse(getIntent().getStringExtra("uri")));
         if(getIntent()!=null) {
+            Log.d(TAG, "onCreate: GETINTENT");
             videoInfo=getIntent().getParcelableExtra("videoinfo");
-            initPlayer(Uri.parse(videoInfo.getFilePath()));
+            streamStatusExtended=getIntent().getParcelableExtra("stream_status");
             movie_title.setText(videoInfo.getTitle());
-
-            if(getIntent().getParcelableExtra("streamstatus")!=null)
-            {
-                StreamStatusExtended streamStatusExtended=getIntent().getParcelableExtra("streamstatus");
-
-
-
-            }
-
+            initPlayer(Uri.parse(videoInfo.getFilePath()));
         }
 
-
     }
-
 
     @Override
     protected void onResume() {
         super.onResume();
+
         hideStatusBar();
         ExoPlayerVideoHandler.getInstance().goToForeground();
         if(streamingService!=null)
         streamingService.resumeStream();
+
     }
 
 
     @Override
     protected void onPause() {
         super.onPause();
+
         ExoPlayerVideoHandler.getInstance().goToBackground();
         if(streamingService!=null)
         streamingService.pauseStream();
+
     }
 
     @Override
@@ -174,6 +183,24 @@ public class PlayerActivity extends AppCompatActivity implements SimpleExoPlayer
 
     }
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+
+        outState.putLong("current_player_position",player.getCurrentPosition());
+
+
+        super.onSaveInstanceState(outState);
+
+
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        player.seekTo(savedInstanceState.getLong("current_player_position"));
+
+    }
+
     private void initPlayer(Uri fileUri)
     {
 
@@ -183,6 +210,8 @@ public class PlayerActivity extends AppCompatActivity implements SimpleExoPlayer
         ExoPlayerVideoHandler.getInstance().getStreamLoadController().setVideoInfo(videoInfo);
         ExoPlayerVideoHandler.getInstance().getStreamLoadController().setPlayerInfo(playerInfo);
         initProgressBar();
+        ExoPlayerVideoHandler.getInstance().getStreamLoadController().setStreamStatus(streamStatus);
+        ExoPlayerVideoHandler.getInstance().getStreamLoadController().setStreamStatusExtended(streamStatusExtended);
     }
 
 
@@ -219,15 +248,17 @@ public class PlayerActivity extends AppCompatActivity implements SimpleExoPlayer
     public void onPlayerStateChanged(boolean playWhenReady, int playbackState) {
         playBackState=playbackState;
 
-        if(playbackState==Player.STATE_BUFFERING) {
-            progressBar.setVisibility(View.VISIBLE);
-            Toast.makeText(this, "Buffering", Toast.LENGTH_LONG).show();
-        }
+        try {
+            if (playbackState == Player.STATE_BUFFERING) {
+                progressBar.setVisibility(View.VISIBLE);
+              //  Toast.makeText(this, "Buffering", Toast.LENGTH_LONG).show();
+            }
 
-        if(playbackState==Player.STATE_READY) {
-            Toast.makeText(this, "Ready", Toast.LENGTH_LONG).show();
-            progressBar.setVisibility(View.GONE);
-        }
+            if (playbackState == Player.STATE_READY) {
+                //Toast.makeText(this, "Ready", Toast.LENGTH_LONG).show();
+                progressBar.setVisibility(View.GONE);
+            }
+        }catch (Exception e){e.printStackTrace();}
 
 
 
@@ -267,7 +298,6 @@ public class PlayerActivity extends AppCompatActivity implements SimpleExoPlayer
     }
 
 
-    //Seekbar
 
     @Override
     public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
@@ -348,10 +378,8 @@ public class PlayerActivity extends AppCompatActivity implements SimpleExoPlayer
 
 
     @Subscribe
-   public void StreamReady(Events.StreamReadyBus streamReadyBus)
+    public void StreamReady(Events.StreamReadyBus streamReadyBus)
     {
-
-
 
     }
 
@@ -359,9 +387,27 @@ public class PlayerActivity extends AppCompatActivity implements SimpleExoPlayer
     public void StreamStatus(Events.StreamStatusBus streamStatusBus)
     {
 
-        try {
+
+/*        try {
         ExoPlayerVideoHandler.getInstance().getStreamLoadController().setStreamStatus(streamStatusBus.getStreamStatus());
-        }catch (Exception e){e.printStackTrace();}
+        }catch (Exception e){e.printStackTrace();
+
+        }*/
+    }
+
+    @Subscribe
+    public void getExtendedStreamStatus(Events.StreamStatusExtendedBus streamStatusExtendedBus)
+    {
+        Log.d(TAG, "getExtendedStreamStatus: "+streamStatusExtendedBus.getStreamStatusExtended().toString());
+        try {
+            ExoPlayerVideoHandler.getInstance().getStreamLoadController().setStreamStatusExtended(streamStatusExtendedBus.getStreamStatusExtended());
+        }catch (Exception e){
+
+            ExoPlayerVideoHandler.getInstance().getStreamLoadController().setStreamStatusExtended(streamStatusExtended);
+
+            e.printStackTrace();
+
+        }
     }
 
     @Override
@@ -370,4 +416,40 @@ public class PlayerActivity extends AppCompatActivity implements SimpleExoPlayer
         titlebarlayout.setVisibility(visibility);
 
     }
+
+    @Override
+    public void onClick(View v) {
+        onBackPressed();
+
+
+    }
+
+
+    private void addSubtitleFile(Uri uri)
+    {
+       // DataSource subtitleDataSource=new DataSource.Factory();
+        //MediaSource subtitleSource=new SingleSampleMediaSource.Factory(uri,);
+
+     /*   new SingleSampleMediaSource(uri,new FileDataSourceFactory(),For,0);
+
+        SingleSampleSource enSource = new SingleSampleSource(Uri.fromFile(new File(context.getExternalCacheDir(), "en-GB.srt")), textDataSource, MediaFormat.createTextFormat(MimeTypes.APPLICATION_SUBRIP, 25, "en"));
+*/
+
+    }
+
+
+    private void initTestPlayer(Uri fileUri)
+    {
+
+        ExoPlayerVideoHandler.getInstance().prepareExoPlayerForUri(this,fileUri,playerView);
+        ExoPlayerVideoHandler.getInstance().addListener(this);
+        player=ExoPlayerVideoHandler.getInstance().getPlayer();
+        player.setPlayWhenReady(true);
+       // ExoPlayerVideoHandler.getInstance().getStreamLoadController().setVideoInfo(videoInfo);
+      //  ExoPlayerVideoHandler.getInstance().getStreamLoadController().setPlayerInfo(playerInfo);
+       // initProgressBar();
+      //  ExoPlayerVideoHandler.getInstance().getStreamLoadController().setStreamStatus(streamStatus);
+     //   ExoPlayerVideoHandler.getInstance().getStreamLoadController().setStreamStatusExtended(streamStatusExtended);
+    }
+
 }

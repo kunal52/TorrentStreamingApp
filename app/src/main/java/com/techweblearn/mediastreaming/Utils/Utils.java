@@ -18,8 +18,17 @@ public class Utils {
         long result=(long) ((size*8/100)/(bitrate)*downloadProgress*1000);
 
         result= (long) (duration*((downloadProgress-DOWNLOADED_THRESHHOLD)/100));
+
+
         Log.d("Downloaded", String.valueOf(result));
         return result;
+    }
+
+    public static long calculateDownloadedInMS( int bitrate, long downloadedBytes)
+    {
+
+        int bytesInSec=bitrate/8;
+        return (downloadedBytes/bytesInSec)*1000;
     }
 
     public static long msToS(long ms)
